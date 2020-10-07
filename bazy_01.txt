@@ -1,0 +1,223 @@
+
+CREATE DATABASE s298277;
+\c 
+CREATE SCHEMA firma;
+CREATE ROLE ksiegowosc;
+GRANT CONNECT ON DATABASE s298277 TO ksiegowosc;
+GRANT USAGE ON SCHEMA firma TO ksiegowosc;
+GRANT SELECT ON ALL TABLES IN SCHEMA firma TO ksiegowosc;
+ALTER DEFAULT PRIVELAGES IN SCHEMA firma GRANT SELECT ON TABLES TO ksiegowosc;
+
+CREATE TABLE firma.pracownicy(
+id_pracownika SERIAL, 
+imie VARCHAR(50) NOT NULL, 
+nazwisko VARCHAR(50) NOT NULL, 
+adres VARCHAR(100), 
+telefon VARCHAR(25)
+);
+
+CREATE TABLE firma.godziny(
+id_godziny SERIAL, 
+data date NOT NULL, 
+liczba_godzin integer NOT NULL, 
+id_pracownika integer NOT NULL
+);
+
+CREATE TABLE firma.pensja_stanowisko(
+id_pensji SERIAL, 
+stanowisko VARCHAR(100) NOT NULL, 
+kwota NUMERIC(9,2) NOT NULL
+);
+
+CREATE TABLE firma.premia(
+id_premii SERIAL, 
+rodzaj VARCHAR(100), 
+kwota NUMERIC(6,2) NOT NULL
+);
+
+CREATE TABLE firma.wynagrodzenie(
+id_wynagrodzenia SERIAL, 
+data DATE NOT NULL, 
+id_pracownika integer NOT NULL, 
+id_godziny integer NOT NULL, 
+id_pensji integer NOT NULL, 
+id_premii integer NOT NULL
+);
+
+ALTER TABLE firma.pracownicy ADD PRIMARY KEY (id_pracownika);
+ALTER TABLE firma.godziny ADD PRIMARY KEY (id_godziny);
+ALTER TABLE firma.pensja_stanowisko ADD PRIMARY KEY (id_pensji);
+ALTER TABLE firma.premia ADD PRIMARY KEY (id_premii);
+ALTER TABLE firma.wynagrodzenie ADD PRIMARY KEY (id_wynagrodzenia);
+
+ALTER TABLE firma.godziny ADD FOREIGN KEY (id_pracownika)
+REFERENCES firma.pracownicy(id_pracownika);
+ALTER TABLE firma.wynagrodzenie ADD CONSTRAINT id_pr FOREIGN KEY (id_pracownika)
+REFERENCES firma.pracownicy(id_pracownika);
+ALTER TABLE firma.wynagrodzenie ADD CONSTRAINT id_gd FOREIGN KEY (id_godziny)
+REFERENCES firma.godziny(id_godziny);
+ALTER TABLE firma.wynagrodzenie ADD CONSTRAINT id_pn FOREIGN KEY (id_pensji)
+REFERENCES firma.pensja_stanowisko(id_pensji);
+ALTER TABLE firma.wynagrodzenie ADD CONSTRAINT id_prem FOREIGN KEY (id_premii)
+REFERENCES firma.premia(id_premii);
+
+CREATE INDEX idx_prac ON firma.pracownicy(id_pracownika);
+CREATE INDEX idx_godz ON firma.godziny(id_godziny);
+CREATE INDEX idx_pensja ON firma.pensja_stanowisko(id_pensji);
+CREATE INDEX idx_premia ON firma.premia(id_premii);
+CREATE INDEX idx_wyn ON firma.wynagrodzenie(id_wynagrodzenia);
+
+COMMENT ON TABLE firma.godziny IS 'To sa godziny';
+COMMENT ON TABLE firma.pensja_stanowisko IS 'To jest pensja_stanowisko';
+COMMENT ON TABLE firma.pracownicy IS 'To sa pracownicy';
+COMMENT ON TABLE firma.premia IS 'To jest premia';
+COMMENT ON TABLE firma.wynagrodzenie IS 'To jest wynagrodzenie';
+
+ALTER TABLE firma.pracownicy DISABLE TRIGGER ALL;
+ALTER TABLE firma.godziny DISABLE TRIGGER ALL;
+ALTER TABLE firma.wynagrodzenie DISABLE TRIGGER ALL;
+ALTER TABLE firma.pensja_stanowisko DISABLE TRIGGER ALL;
+ALTER TABLE firma.premia DISABLE TRIGGER ALL;
+
+
+ALTER TABLE firma.godziny ADD COLUMN miesiac integer NOT NULL CHECK(miesiac < 13), ADD COLUMN numer_tygodnia integer NOT NULL CHECK(numer tygodnia < 54);
+
+INSERT INTO firma.pracownicy(imie, nazwisko, adres, telefon) values
+('Jan', 'Nowak', 'Krakow 1', '111111111'),
+('Andrzej', 'Nowak', 'Krakow 2', '222222222'),
+('Jan', 'Kowalski', 'Krakow 3', '111111119'),
+('Mateusz', 'Kowalski', 'Krakow 4', '111111179'),
+('Mateusz', 'Kwiatek', 'Krakow 5', '111111579'),
+('Piotr', 'Kwiatek', 'Krakow 6', '991111579'),
+('Piotr', 'Nowak', 'Zakopane 1', '777777777'),
+('Janina', 'Bachleda', 'Zakopane 2', '777777777'),
+('Anna', 'Bachleda', 'Zakopane 2', '777777788'),
+('Katarzyna', 'Bachleda-Curus', 'Zakopane 5', '999999999');
+
+INSERT INTO firma.godziny(data, liczba_godzin, id_pracownika, miesiac, numer_tygodnia) VALUES
+('2020-10-6', 8, 1, 10, 41),
+('2020-10-6', 8, 2, 10, 41),
+('2020-10-6', 8, 3, 10, 41),
+('2020-10-6', 8, 4, 10, 41),
+('2020-10-6', 8, 5, 10, 41),
+('2020-10-6', 8, 6, 10, 41),
+('2020-10-7', 8, 1, 10, 41),
+('2020-10-7', 8, 2, 10, 41),
+('2020-10-7', 8, 7, 10, 41),
+('2020-10-8', 20, 1, 10, 41),
+('2020-10-9', 20, 1, 10, 41),
+('2020-10-10', 20, 1, 10, 41),
+('2020-10-11', 20, 1, 10, 42),
+('2020-10-12', 20, 1, 10, 42),
+('2020-10-13', 20, 1, 10, 42);
+
+INSERT INTO firma.pensja_stanowisko(stanowisko, kwota) VALUES
+('kierownik', 10000),
+('manager', 15000),
+('dyrektor', 15500),
+('CEO', 100000),
+('magazynier', 5000),
+('ksiegowosc', 7000),
+('obsluga', 3000),
+('helpdesk', 6300),
+('CTO', 80000),
+('CFO', 80000);
+
+INSERT INTO firma.premia(rodzaj, kwota) VALUES
+(null, 0),
+('swiateczna', 500),
+('uznaniowa', 200),
+('uznaniowa', 300),
+('uznaniowa', 400),
+('uznaniowa', 500),
+('urodzinowa', 100),
+('roczna', 800),
+('miesieczna', 50),
+('miesieczna', 100),
+('miesieczna', 150);
+
+INSERT INTO firma.wynagrodzenie(data, id_pracownika, id_godziny, id_pensji, id_premii) VALUES
+('2020-10-30', 1, 1, 1, 1),
+('2020-10-30', 1, 7, 1, 1),
+('2020-10-30', 1, 10, 1, 1),
+('2020-10-30', 1, 11, 1, 1),
+('2020-10-30', 1, 12, 1, 1),
+('2020-10-30', 1, 13, 1, 1),
+('2020-10-30', 1, 14, 1, 1),
+('2020-10-30', 1, 15, 1, 1),
+('2020-10-30', 2, 2, 2, 3),
+('2020-10-30', 3, 3, 3, 3),
+('2020-10-30', 4, 4, 4, 3),
+('2020-10-30', 5, 5, 5, 3),
+('2020-10-30', 6, 6, 6, 3),
+('2020-10-30', 2, 8, 2, 3),
+('2020-10-30', 7, 9, 7, 3);
+
+6)
+
+a)
+SELECT id_pracownika, nazwisko FROM firma.pracownicy;
+
+b)
+SELECT t1.id_pracownika FROM (SELECT g.id_pracownika, SUM(g.liczba_godzin) AS godziny FROM firma.godziny g GROUP BY g.id_pracownika) t1 JOIN (SELECT distinct w.id_pracownika, pe.kwota FROM firma.wynagrodzenie w JOIN firma.pensja_stanowisko pe ON pe.id_pensji = w.id_pensji) t2 ON t1.id_pracownika = t2.id_pracownika WHERE (t2.kwota / 160 * t1.godziny) > 1000;
+
+c)
+SELECT t1.id_pracownika FROM (SELECT g.id_pracownika, SUM(g.liczba_godzin) AS godziny FROM firma.godziny g GROUP BY g.id_pracownika) t1 JOIN (SELECT DISTINCT w.id_pracownika, pe.kwota FROM firma.wynagrodzenie w JOIN firma.pensja_stanowisko pe ON pe.id_pensji = w.id_pensji) t2 ON t1.id_pracownika = t2.id_pracownika JOIN (SELECT DISTINCT w.id_pracownika, p.rodzaj FROM firma.wynagrodzenie w JOIN firma.premia p ON w.id_premii = p.id_premii) t3 ON t2.id_pracownika = t3.id_pracownika WHERE (t2.kwota / 160 * t1.godziny > 2000) AND t3.rodzaj IS NULL;
+
+d)
+SELECT * FROM firma.pracownicy WHERE imie LIKE 'J%';
+
+e)
+SELECT * FROM firma.pracownicy WHERE nazwisko iLIKE '%n%' AND imie LIKE '%a';
+
+f)
+SELECT p.imie, p.nazwisko, sum(g.liczba_godzin) - 160 AS liczba_nadgodzin FROM firma.godziny g JOIN firma.pracownicy p ON g.id_pracownika = p.id_pracownika GROUP BY g.id_pracownika, p.imie, p.nazwisko HAVING SUM(g.liczba_godzin) > 160;
+
+g)
+SELECT DISTINCT p.imie, p.nazwisko FROM firma.pracownicy p NATURAL JOIN firma.wynagrodzenie w NATURAL JOIN firma.pensja_stanowisko pe WHERE 1500 <= pe.kwota AND pe.kwota <= 3000;
+
+h)
+SELECT DISTINCT t1.imie, t1.nazwisko FROM (SELECT p.imie, p.nazwisko, p.id_pracownika FROM firma.pracownicy p NATURAL JOIN firma.godziny g GROUP BY p.imie, p.nazwisko, p.id_pracownika HAVING sum(g.liczba_godzin) > 160) t1 NATURAL JOIN (SELECT w.id_pracownika FROM firma.wynagrodzenie w NATURAL JOIN firma.premia p WHERE p.rodzaj IS NULL) t2;
+
+
+7)
+
+a)
+SELECT DISTINCT pr.imie, pr.nazwisko, pe.kwota FROM firma.pracownicy pr JOIN firma.wynagrodzenie w ON pr.id_pracownika = w.id_pracownika JOIN firma.pensja_stanowisko pe ON w.id_pensji = pe.id_pensji ORDER BY pe.kwota;
+
+b)
+SELECT DISTINCT pr.imie, pr.nazwisko, pe.kwota, pre.kwota FROM firma.pracownicy pr JOIN firma.wynagrodzenie w ON pr.id_pracownika = w.id_pracownika JOIN firma.pensja_stanowisko pe ON w.id_pensji = pe.id_pensji JOIN firma.premia pre ON pre.id_premii = w.id_premii ORDER BY pe.kwota DESC, pre.kwota DESC;
+
+c)
+SELECT COUNT(DISTINCT w.id_pracownika) AS ilosc, pe.stanowisko FROM firma.wynagrodzenie w NATURAL JOIN firma.pensja_stanowisko pe GROUP BY pe.stanowisko;
+
+d)
+SELECT AVG(t2.kwota / 160 * t1.godziny) AS Avg, Min(t2.kwota / 160 * t1.godziny) AS Min, MAX(t2.kwota / 160 * t1.godziny) AS Max FROM (SELECT g.id_pracownika, SUM(g.liczba_godzin) AS godziny FROM firma.godziny g GROUP BY g.id_pracownika) t1 JOIN (SELECT distinct w.id_pracownika, pe.kwota, pe.stanowisko FROM firma.wynagrodzenie w JOIN firma.pensja_stanowisko pe ON pe.id_pensji = w.id_pensji) t2 ON t1.id_pracownika = t2.id_pracownika WHERE t2.stanowisko LIKE 'kierownik';
+
+e)
+SELECT SUM(t2.kwota / 160 * t1.godziny) FROM (SELECT g.id_pracownika, SUM(g.liczba_godzin) AS godziny FROM firma.godziny g GROUP BY g.id_pracownika) t1 JOIN (SELECT distinct w.id_pracownika, pe.kwota, pe.stanowisko FROM firma.wynagrodzenie w JOIN firma.pensja_stanowisko pe ON pe.id_pensji = w.id_pensji) t2 ON t1.id_pracownika = t2.id_pracownika;
+
+f)
+SELECT SUM(t2.kwota / 160 * t1.godziny), t2.stanowisko FROM (SELECT g.id_pracownika, SUM(g.liczba_godzin) AS godziny FROM firma.godziny g GROUP BY g.id_pracownika) t1 JOIN (SELECT distinct w.id_pracownika, pe.kwota, pe.stanowisko FROM firma.wynagrodzenie w JOIN firma.pensja_stanowisko pe ON pe.id_pensji = w.id_pensji) t2 ON t1.id_pracownika = t2.id_pracownika GROUP BY t2.stanowisko;
+
+g)
+SELECT COUNT(pe.stanowisko), pe.stanowisko FROM firma.pensja_stanowisko pe JOIN firma.wynagrodzenie w ON pe.id_pensji = w.id_pensji JOIN firma.premia pre ON w.id_premii = pre.id_premii WHERE pre.rodzaj IS NOT null GROUP BY pe.stanowisko;
+
+h)
+DELETE FROM firma.pracownicy pr WHERE pr.id_pracownika IN (SELECT pr.id_pracownika FROM firma.pracownicy pr NATURAL JOIN firma.wynagrodzenie w NATURAL JOIN firma.pensja_stanowisko pe WHERE pe.kwota < 1200);
+
+8)
+
+a)
+UPDATE firma.pracownicy SET telefon='(+48)' || telefon;
+
+b)
+UPDATE firma.pracownicy SET telefon=substring(telefon, 1, 5) || substring(telefon, 6, 3) || '-' || substring(telefon, 10,3) || '-' || substring(telefon, 14, 3);
+
+c)
+SELECT * FROM firma.pracownicy WHERE character_length(nazwisko)=(SELECT MAX(character_length(nazwisko)) FROM firma.pracownicy);
+
+d)
+SELECT MD5(CONCAT(pr.id_pracownika, pr.imie, pr.nazwisko, pr.adres, pr.telefon, pe.kwota)) FROM firma.pracownicy pr JOIN firma.wynagrodzenie w ON w.id_pracownika = pr.id_pracownika JOIN firma.pensja_stanowisko pe ON pe.id_pensji = w.id_pensji;
+
+
