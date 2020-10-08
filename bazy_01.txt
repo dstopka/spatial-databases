@@ -220,4 +220,5 @@ SELECT * FROM firma.pracownicy WHERE character_length(nazwisko)=(SELECT MAX(char
 d)
 SELECT MD5(CONCAT(pr.id_pracownika, pr.imie, pr.nazwisko, pr.adres, pr.telefon, pe.kwota)) FROM firma.pracownicy pr JOIN firma.wynagrodzenie w ON w.id_pracownika = pr.id_pracownika JOIN firma.pensja_stanowisko pe ON pe.id_pensji = w.id_pensji;
 
-
+9)
+select CONCAT('Pracownik Jan Nowak, w dniu', t1.data, 'otrzymal pensje calkowita na kwote xxx, gdzie wynagrodzenie zasadnicze wynosilo: ', pe.kwota, ', premia: ', pre.kwota) from (select w.id_pracownika, pr.imie, w.data, w.id_pensji, w.id_premii from firma.pracownicy pr NATURAL JOIN firma.wynagrodzenie w GROUP BY w.data, pr.imie, w.id_pracownika, w.id_pensji, w.id_premii) t1 JOIN firma.pensja_stanowisko pe ON pe.id_pensji = t1.id_pensji JOIN firma.premia pre ON pre.id_premii = t1.id_premii;
