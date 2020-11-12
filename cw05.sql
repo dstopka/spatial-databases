@@ -19,17 +19,16 @@ INSERT INTO obiekty(nazwa, geometria) VALUES
 
 INSERT INTO obiekty(nazwa, geometria) VALUES
 ('obiekt2', ST_Collect(ARRAY[
- 	'LINESTRING(10 6, 14 6)',
+ 	'LINESTRING(10 2, 10 6, 14 6)',
  	'CIRCULARSTRING(14 6, 16 4, 14 2)',
- 	'CIRCULARSTRING(12 0, 10 2, 10 6)',
- 	'LINESTRING(10 2, 10 6)',
+ 	'CIRCULARSTRING(14 2, 12 0, 10 2)',
  	ST_Buffer(ST_MakePoint(12, 2), 1)
 ]));
  
 /* c. */
 
 INSERT INTO obiekty(nazwa, geometria) VALUES
-('obiekt3', ST_MakePolygon('LINESTRING(7 15, 10 17, 12 13)')
+('obiekt3', ST_MakePolygon('LINESTRING(7 15, 10 17, 12 13, 7 15)')
 );
 
 /* d. */
@@ -63,7 +62,7 @@ WHERE a.nazwa='obiekt3' and b.nazwa='obiekt4';
 
 /* 3) */
 
-UPDATE obiekty SET GEOM = ST_MakePolygon(ST_AddPoint(geometria, ST_StartPoint(geometria))) WHERE nazwa LIKE 'obiekt4';
+UPDATE obiekty SET geometria = ST_MakePolygon(ST_AddPoint(geometria, ST_StartPoint(geometria))) WHERE nazwa LIKE 'obiekt4';
 
 /* 4) */
 
